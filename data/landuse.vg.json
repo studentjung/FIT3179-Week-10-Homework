@@ -1,0 +1,76 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "width": 700,
+  "height": 700,
+  "background": "#f8f8f8",
+  "projection": {
+    "type": "azimuthalEqualArea",
+    "center": [144.9631, -37.8136],
+    "rotate": [215, 90, 0]
+  },
+  "title": "Percentage of residential land area per suburb in the future of Outer West Melbourne",
+  "layer": [
+    {
+      "data": {
+        "url": "data/vic_bounds_residential.topojson",
+        "format": {
+          "type": "topojson",
+          "feature": "vic_bounds_residential"
+        }
+      },
+      "mark": {"type": "geoshape", "stroke": "black"},
+      "encoding": {
+        "stroke": {
+          "condition": {
+            "test": "datum.properties.residential_pct > 1",
+            "value": "black"
+          },
+          "value": "#555"
+        },
+        "color": {
+          "field": "properties.residential_pct", 
+          "type": "quantitative", 
+          "title": "Residential (%)", 
+          "scale": {"scheme": "blues"},
+          "legend": {
+            "title": "Residential %",
+            "format": ".0f",
+            "titleFontSize": 14,
+            "labelFontSize": 12
+          }},
+        "tooltip": [
+          {"field": "properties.SAL_NAME21", "type": "nominal", "title": "Area"},
+          {"field": "properties.residential_pct", "type": "quantitative", "title": "Residential Land Use (%)", "format": ".0f"}
+        ]
+      }
+    },
+    {
+      "data": {
+        "url": "data/vic_bounds_residential.topojson",
+        "format": {
+          "type": "topojson",
+          "feature": "vic_bounds_residential"
+        }
+      },
+      "mark": {"type": "text"},
+      "encoding": {
+        "text": { "field": "properties.SAL_NAME21" },
+        "longitude": { "field": "properties.LONG" },
+        "latitude": { "field": "properties.LAT" },
+        "size": { "value": 12 },
+        "color": { 
+          "condition": {
+            "test": "datum.properties.residential_pct > 50",
+            "value": "white"
+          },
+          "value": "black"
+        }
+      },
+      "transform": [
+        {
+          "filter": "datum.properties.residential_pct > 1 || datum.properties.area_total > 15000000"
+        }
+      ]
+    }
+  ]
+}
