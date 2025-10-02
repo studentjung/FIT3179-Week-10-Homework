@@ -1,0 +1,117 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "width": 700,
+  "height": 700,
+  "background": "#f8f8f8",
+  "projection": {
+    "type": "azimuthalEqualArea",
+    "center": [144.9631, -37.8136],
+    "rotate": [215, 90, 0]
+  },
+  "data": {
+    "url": "data/suburb_landuse.topojson",
+    "format": {
+      "type": "topojson",
+      "feature": "suburb_landuse_summary"
+    }
+  },
+  "transform": [
+    {
+      "calculate": "datum.properties[land_use_class] != null ? datum.properties[land_use_class] : 0",
+      "as": "selected_value"
+    },
+    {
+      "filter": "datum.selected_value > 0.1"
+    }
+  ],
+  "title": "Bar plot of absolute land use per suburb",
+  "params": [
+    {
+      "name": "land_use_class",
+      "value": "developable_area_residential",
+      "bind": {
+        "input": "select",
+        "options": [
+          "transport",
+          "credited_open_space",
+          "uncredited_open_space",
+          "developable_area_residential",
+          "education_community_government",
+          "developable_area_employment",
+          "regional_open_space",
+          "other_non_developable_land"
+        ],
+        "labels": [
+          "Transport",
+          "Credited Open Space",
+          "Uncredited Open Space",
+          "Residential",
+          "Education/Community/Government",
+          "Industrial/Commercial",
+          "Regional Open Space",
+          "Non-Developable"
+        ],
+        "name": "Land Use Type: "
+      }
+    }
+  ],
+  "layer": [
+    {
+      "mark": "bar",
+      "encoding": {
+        "x": {
+          "field": "properties.suburb_name",
+          "type": "nominal",
+          "axis": {"labelAngle": -45, "title": "Suburb"}
+        },
+        "y": {  
+          "field": "selected_value",
+          "type": "quantitative",
+          "axis": {"title": "Selected Land Use (km²)"}
+        },
+        "tooltip": [
+          {"field": "properties.suburb_name", "type": "nominal", "title": "Suburb"},
+          {"field": "properties.total_area_km2", "type": "quantitative", "title": "Suburb Total Area (km²)", "format": ".2f"},
+          {"field": "selected_value", "type": "quantitative", "title": "Selected Land Use (km²)", "format": ".2f"}
+        ]
+      }
+    },
+    {
+      "mark": { 
+        "type": "text",
+        "dy": -5  
+      },
+      "transform": [
+        {
+          "window": [
+            {"op": "max", "field": "selected_value", "as": "maxVal"},
+            {"op": "min", "field": "selected_value", "as": "minVal"}
+          ],
+          "frame": [null, null]
+        }
+      ],
+      "encoding": {
+        "text": {
+          "field": "selected_value",
+          "type": "quantitative",
+          "format": ".1f"
+        },
+        "opacity": {
+          "condition": {
+            "test": "datum.selected_value === datum.maxVal || datum.selected_value === datum.minVal",
+            "value": 1
+          },
+          "value": 0
+        },
+        "x": {
+          "field": "properties.suburb_name",
+          "type": "nominal"
+        },
+        "y": {  
+          "field": "selected_value",
+          "type": "quantitative"
+        }
+      }
+    }
+  ]
+}

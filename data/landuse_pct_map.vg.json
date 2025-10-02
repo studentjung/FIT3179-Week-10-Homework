@@ -1,0 +1,111 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+  "width": 700,
+  "height": 700,
+  "background": "#f8f8f8",
+  "projection": {
+    "type": "azimuthalEqualArea",
+    "center": [144.9631, -37.8136],
+    "rotate": [215, 90, 0]
+  },
+  "data": {
+    "url": "data/suburb_landuse.topojson",
+    "format": {
+      "type": "topojson",
+      "feature": "suburb_landuse_summary"
+    }
+  },
+  "transform": [
+    {
+      "calculate": "datum.properties[land_use_class] != null ? datum.properties[land_use_class] : 0",
+      "as": "selected_value"
+    },
+    {
+      "calculate": "datum.selected_value / 100 * datum.properties.total_area_km2",
+      "as": "selected_value_abs"
+    }
+  ],
+  "title": "Percentage of residential land area per suburb",
+  "params": [
+    {
+      "name": "land_use_class",
+      "value": "developable_area_residential_pct",
+      "bind": {
+        "input": "select",
+        "options": [
+          "transport_pct",
+          "credited_open_space_pct",
+          "uncredited_open_space_pct",
+          "developable_area_residential_pct",
+          "education_community_government_pct",
+          "developable_area_employment_pct",
+          "regional_open_space_pct",
+          "other_non_developable_land_pct"
+        ],
+        "labels": [
+          "Transport",
+          "Credited Open Space",
+          "Uncredited Open Space",
+          "Residential",
+          "Education/Community/Government",
+          "Industrial/Commercial",
+          "Regional Open Space",
+          "Non-Developable"
+        ],
+        "name": "Land Use Type: "
+      }
+    }
+  ],
+  "layer": [
+    {
+      "mark": {"type": "geoshape", "stroke": "black"},
+      "encoding": {
+        "stroke": {
+          "condition": {
+            "test": "datum.selected_value > 1",
+            "value": "black"
+          },
+          "value": "#555"
+        },
+        "color": {
+          "field": "selected_value", 
+          "type": "quantitative", 
+          "title": "Residential (%)", 
+          "scale": {"scheme": "blues"},
+          "legend": {
+            "title": "Residential %",
+            "format": ".0f",
+            "titleFontSize": 14,
+            "labelFontSize": 12
+        }},
+        "tooltip": [
+          {"field": "properties.suburb_name", "type": "nominal", "title": "Suburb"},
+          {"field": "properties.total_area_km2", "type": "quantitative", "title": "Suburb Total Area (km²)", "format": ".2f"},
+          {"field": "selected_value_abs", "type": "quantitative", "title": "Selected Land Use (km²)", "format": ".2f"},
+          {"field": "selected_value", "type": "quantitative", "title": "Selected Land Use (%)", "format": ".0f"}
+        ]
+      }
+    },
+    {
+      "mark": "text",
+      "encoding": {
+        "text": { "field": "properties.suburb_name" },
+        "longitude": { "field": "properties.long" },
+        "latitude": { "field": "properties.lat" },
+        "size": { "value": 12 },
+        "color": { 
+          "condition": {
+            "test": "luminance(scale('color', datum.selected_value)) < 0.5",
+            "value": "white"
+          },
+          "value": "black"
+        }
+      },
+      "transform": [
+        {
+          "filter": "datum.selected_value > 0.5 || datum.properties.total_area_km2 > 20"
+        }
+      ]
+    }
+  ]
+}
